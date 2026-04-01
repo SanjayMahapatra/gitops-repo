@@ -15,6 +15,6 @@ app: nginx
 spec:
 containers:
 - name: nginx
-image: sanjaym1978/mychennel:latest
+image: sanjaym1978/mychennel:v1.0.1
 ports:
 - containerPort: 80
