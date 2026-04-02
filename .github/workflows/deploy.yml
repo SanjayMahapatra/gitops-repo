@@ -14,17 +14,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # SonarQube Scan
+      # SonarQube Scan (SonarCloud)
       - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@v2
+        uses: SonarSource/sonarcloud-github-action@v3
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         with:
           args: >
             -Dsonar.projectKey=my-project
             -Dsonar.organization=my-org
-            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.host.url=https://sonarcloud.io
 
       # Build Docker Image
       - name: Build Docker Image
@@ -54,10 +53,12 @@ jobs:
       # Slack Notification (Dev)
       - name: Notify Slack (DEV)
         if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data '{"text":"DEV Deployment Completed"}' \
-          ${{ secrets.SLACK_WEBHOOK }}
+          "$SLACK_WEBHOOK"
 
   # ================= QA STAGE =================
   deploy-qa:
@@ -70,10 +71,12 @@ jobs:
 
       - name: Notify Slack (QA)
         if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data '{"text":"QA Deployment Completed"}' \
-          ${{ secrets.SLACK_WEBHOOK }}
+          "$SLACK_WEBHOOK"
 
   # ================= PROD STAGE =================
   deploy-prod:
@@ -86,7 +89,9 @@ jobs:
 
       - name: Notify Slack (PROD)
         if: always()
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data '{"text":"PROD Deployment Completed"}' \
-          ${{ secrets.SLACK_WEBHOOK }}
+          "$SLACK_WEBHOOK"
