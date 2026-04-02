@@ -1,101 +1,92 @@
 name: Deploy Pipeline
 
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
 
 jobs:
+  # ================= DEV STAGE =================
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-# ================= DEV STAGE =================
+      # SonarQube Scan
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=my-project
+            -Dsonar.organization=my-org
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
 
-deploy-dev:
-runs-on: ubuntu-latest
+      # Build Docker Image
+      - name: Build Docker Image
+        run: docker build -t sanjaym1978/mychennel:${{ github.sha }} .
 
-```
-steps:
-# Checkout code
-- name: Checkout Code
-  uses: actions/checkout@v3
+      # Install Trivy
+      - name: Install Trivy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.50.1_Linux-64bit.deb
 
-# SonarQube Scan
-- name: SonarQube Scan
-  uses: sonarsource/sonarqube-scan-action@v2
-  with:
-    args: >
-      -Dsonar.projectKey=my-project
-      -Dsonar.organization=my-org
-      -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
-      -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      # Trivy Scan
+      - name: Scan Docker Image
+        run: |
+          trivy image --severity HIGH,CRITICAL --exit-code 1 sanjaym1978/mychennel:${{ github.sha }}
 
-# Build Docker Image
-- name: Build Docker Image
-  run: docker build -t sanjaym1978/mychennel:${{ github.sha }} .
+      # Docker Login
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-# Install Trivy
-- name: Install Trivy
-  run: |
-    sudo apt-get update
-    sudo apt-get install -y wget
-    wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.deb
-    sudo dpkg -i trivy_0.50.1_Linux-64bit.deb
+      # Push Image
+      - name: Push Docker Image
+        run: docker push sanjaym1978/mychennel:${{ github.sha }}
 
-# Trivy Scan
-- name: Scan Docker Image
-  run: |
-    trivy image --severity HIGH,CRITICAL --exit-code 1 sanjaym1978/mychennel:${{ github.sha }}
+      # Slack Notification (Dev)
+      - name: Notify Slack (DEV)
+        if: always()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"DEV Deployment Completed"}' \
+          ${{ secrets.SLACK_WEBHOOK }}
 
-# Docker Login
-- name: Login to DockerHub
-  run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+  # ================= QA STAGE =================
+  deploy-qa:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: qa
+    steps:
+      - name: Deploy to QA
+        run: echo "Deploying to QA"
 
-# Push Image
-- name: Push Docker Image
-  run: docker push sanjaym1978/mychennel:${{ github.sha }}
+      - name: Notify Slack (QA)
+        if: always()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"QA Deployment Completed"}' \
+          ${{ secrets.SLACK_WEBHOOK }}
 
-# Slack Notification (Dev)
-- name: Notify Slack (DEV)
-  if: always()
-  run: |
-    curl -X POST -H 'Content-type: application/json' \
-    --data '{"text":"DEV Deployment Completed"}' \
-    ${{ secrets.SLACK_WEBHOOK }}
-```
+  # ================= PROD STAGE =================
+  deploy-prod:
+    needs: deploy-qa
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - name: Deploy to PROD
+        run: echo "Deploying to PROD"
 
-# ================= QA STAGE =================
-
-deploy-qa:
-needs: deploy-dev
-runs-on: ubuntu-latest
-environment: qa   # 👈 Approval required
-
-```
-steps:
-- name: Deploy to QA
-  run: echo "Deploying to QA"
-
-- name: Notify Slack (QA)
-  run: |
-    curl -X POST -H 'Content-type: application/json' \
-    --data '{"text":"QA Deployment Completed"}' \
-    ${{ secrets.SLACK_WEBHOOK }}
-```
-
-# ================= PROD STAGE =================
-
-deploy-prod:
-needs: deploy-qa
-runs-on: ubuntu-latest
-environment: prod   # 👈 Approval required
-
-```
-steps:
-- name: Deploy to PROD
-  run: echo "Deploying to PROD"
-
-- name: Notify Slack (PROD)
-  run: |
-    curl -X POST -H 'Content-type: application/json' \
-    --data '{"text":"PROD Deployment Completed"}' \
-    ${{ secrets.SLACK_WEBHOOK }}
-```
+      - name: Notify Slack (PROD)
+        if: always()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"PROD Deployment Completed"}' \
+          ${{ secrets.SLACK_WEBHOOK }}
