@@ -21,7 +21,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=gitops-repo
+            -Dsonar.projectKey=argocd-zero-2-hero
             -Dsonar.organization=sanjaymahapatra
             -Dsonar.host.url=https://sonarcloud.io
 
