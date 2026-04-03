@@ -5,7 +5,6 @@ on:
     branches:
       - main
 
-
 jobs:
   # ================= DEV STAGE =================
   deploy-dev:
@@ -31,16 +30,18 @@ jobs:
         # run: docker build -t sanjaym1978/mychennel:${{ github.sha }} .
         run: docker build -f .github/Dockerfile -t sanjaym1978/mychennel:${{ github.sha }} .
 
-
-      # Install Trivy
-      - name: Install Trivy
+      - name: Install Trivy (apt)
         run: |
-          TRIVY_VERSION=0.68.2
-          sudo apt-get install -y wget
-          wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb
-          sudo dpkg -i trivy_${TRIVY_VERSION}_Linux-64bit.deb
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+          trivy --version
 
-     # Trivy Scan
+      # Trivy Scan
       - name: Scan Docker Image
         run: |
           docker images | head -n 50
