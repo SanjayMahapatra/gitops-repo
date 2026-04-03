@@ -30,7 +30,7 @@ jobs:
         # run: docker build -t sanjaym1978/mychennel:${{ github.sha }} .
         run: docker build -f .github/Dockerfile -t sanjaym1978/mychennel:${{ github.sha }} .
 
-      - name: Install Trivy (apt)
+      - name: Install Trivy
         run: |
           set -euxo pipefail
           sudo apt-get update
@@ -42,7 +42,7 @@ jobs:
           trivy --version
 
       # Trivy Scan
-      - name: Scan Docker Image
+      - name: TRIVY SCAN
         run: |
           docker images | head -n 50
           docker image inspect sanjaym1978/mychennel:${{ github.sha }}
