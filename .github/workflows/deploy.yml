@@ -46,6 +46,14 @@ jobs:
      #      docker image inspect sanjaym1978/mychennel:${{ github.sha }}
      #      trivy image --severity HIGH,CRITICAL --exit-code 1 sanjaym1978/mychennel:${{ github.sha }}
 
+      # Validate DockerHub secrets before login
+      - name: Validate DockerHub secrets
+        run: |
+          if [[ -z "${{ secrets.DOCKER_USERNAME }}" || -z "${{ secrets.DOCKER_PASSWORD }}" ]]; then
+            echo "ERROR: Missing DOCKER_USERNAME or DOCKER_PASSWORD secrets. Configure them in GitHub Secrets."
+            exit 1
+          fi
+
       # Docker Login
       - name: Login to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
@@ -56,7 +64,7 @@ jobs:
 
       # Slack Notification (Dev)
       - name: Notify Slack (DEV)
-        if: always()
+        if: ${{ always() && secrets.SLACK_WEBHOOK != '' }}
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
@@ -74,7 +82,7 @@ jobs:
         run: echo "Deploying to QA"
 
       - name: Notify Slack (QA)
-        if: always()
+        if: ${{ always() && secrets.SLACK_WEBHOOK != '' }}
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
@@ -92,7 +100,7 @@ jobs:
         run: echo "Deploying to PROD"
 
       - name: Notify Slack (PROD)
-        if: always()
+        if: ${{ always() && secrets.SLACK_WEBHOOK != '' }}
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
         run: |
