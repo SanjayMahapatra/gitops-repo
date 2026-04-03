@@ -55,16 +55,6 @@ jobs:
       - name: Push Docker Image
         run: docker push sanjaym1978/mychennel:${{ github.sha }}
 
-      # Slack Notification (Dev)
-      - name: Notify Slack (DEV)
-        if: always()
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"DEV Deployment Completed"}' \
-          "$SLACK_WEBHOOK"
-
   # ================= QA STAGE =================
   deploy-qa:
     needs: deploy-dev
@@ -74,15 +64,6 @@ jobs:
       - name: Deploy to QA
         run: echo "Deploying to QA"
 
-      - name: Notify Slack (QA)
-        if: always()
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"QA Deployment Completed"}' \
-          "$SLACK_WEBHOOK"
-
   # ================= PROD STAGE =================
   deploy-prod:
     needs: deploy-qa
@@ -91,12 +72,3 @@ jobs:
     steps:
       - name: Deploy to PROD
         run: echo "Deploying to PROD"
-
-      - name: Notify Slack (PROD)
-        if: always()
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        run: |
-          curl -X POST -H 'Content-type: application/json' \
-          --data '{"text":"PROD Deployment Completed"}' \
-          "$SLACK_WEBHOOK"
