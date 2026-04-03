@@ -1,14 +1,70 @@
+name: Deploy Pipeline
 
-  notify:
-    if: always()
-    name: Notify Slack
-    uses: slackapi/slack-github-action@v2
-    with:
-      payload: |
-        {
-          "text": "Deployment Notification: Job '{{ job.status }}' on environment '{{ env.ENV }}'\nRepository: {{ github.repository }}\nBranch: {{ github.ref }}\nSHA: {{ github.sha }}\nRun URL: ${{ github.run_url }}"
-        }
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+on:
+  push:
+    branches:
+      - main
 
-  
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Add deployment steps here...
+      
+      - name: Slack Notification
+        if: success() || failure()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          text: Deployment to DEV environment for repo `${{ github.repository }}` failed! 
+                 Details:
+                 - Environment: DEV
+                 - Branch: ${{ github.ref }}
+                 - SHA: ${{ github.sha }}
+                 - Run URL: ${{ github.run_url }}
+
+  deploy-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Add deployment steps here...
+      
+      - name: Slack Notification
+        if: success() || failure()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          text: Deployment to QA environment for repo `${{ github.repository }}` failed! 
+                 Details:
+                 - Environment: QA
+                 - Branch: ${{ github.ref }}
+                 - SHA: ${{ github.sha }}
+                 - Run URL: ${{ github.run_url }}
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Add deployment steps here...
+      
+      - name: Slack Notification
+        if: success() || failure()
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          status: ${{ job.status }}
+          text: Deployment to PROD environment for repo `${{ github.repository }}` failed! 
+                 Details:
+                 - Environment: PROD
+                 - Branch: ${{ github.ref }}
+                 - SHA: ${{ github.sha }}
+                 - Run URL: ${{ github.run_url }}
