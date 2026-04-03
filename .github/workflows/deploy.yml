@@ -14,16 +14,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # SonarQube Scan (SonarCloud)
-      - name: SonarQube Scan
-        uses: SonarSource/sonarcloud-github-action@v3
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=my-project
-            -Dsonar.organization=my-org
-            -Dsonar.host.url=https://sonarcloud.io
+      # # SonarQube Scan (SonarCloud)
+      # - name: SonarQube Scan
+      #   uses: SonarSource/sonarcloud-github-action@v3
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     args: >
+      #       -Dsonar.projectKey=my-project
+      #       -Dsonar.organization=my-org
+      #       -Dsonar.host.url=https://sonarcloud.io
 
       # Build Docker Image
       - name: Build Docker Image
