@@ -21,8 +21,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=my-project
-            -Dsonar.organization=my-org
+            -Dsonar.projectKey=gitops-repo
+            -Dsonar.organization=sanjaymahapatra
             -Dsonar.host.url=https://sonarcloud.io
 
       # Build Docker Image
