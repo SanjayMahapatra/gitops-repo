@@ -27,7 +27,7 @@ jobs:
 
       # Build Docker Image
       - name: Build Docker Image
-        run: docker build -t sanjaym1978/mychennel:${{ github.sha }} -f app/Dockerfile app
+        run: docker build -t sanjaym1978/mychennel:${{ github.sha }} -f Dockerfile .
 
       # Install Trivy
       - name: Install Trivy
