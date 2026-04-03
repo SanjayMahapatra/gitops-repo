@@ -35,10 +35,10 @@ jobs:
       # Install Trivy
       - name: Install Trivy
         run: |
-          sudo apt-get update
+          TRIVY_VERSION=0.68.2
           sudo apt-get install -y wget
-          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.deb
-          sudo dpkg -i trivy_0.50.1_Linux-64bit.deb
+          wget https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.deb
+          sudo dpkg -i trivy_${TRIVY_VERSION}_Linux-64bit.deb
 
      # Trivy Scan
       - name: Scan Docker Image
