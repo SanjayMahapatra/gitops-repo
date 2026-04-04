@@ -15,12 +15,6 @@ spec:
     spec:
       containers:
         - name: nginx
-<<<<<<< HEAD
           image: sanjaym1978/mychennel:v2
           ports:
             - containerPort: 80
-=======
-          image: sanjaym1978/mychennel:latest
-          ports:
-            - containerPort: 80
->>>>>>> a33d5fb (update deployment)
